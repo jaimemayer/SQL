@@ -1,4 +1,4 @@
---Create a grocery store database
+--create a grocery store database
 
 CREATE TABLE inventory (id INTEGER PRIMARY KEY, name TEXT, aisle INTEGER, price NUMERIC, quantity INTEGER);
 
