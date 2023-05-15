@@ -44,7 +44,19 @@ FROM astronauts
 ORDER BY Space_Walks desc
 LIMIT 10;
 
-Lastly, I determined how many astronauts were active at the time the data was recorded, I grouped them by gender, as well.
+#I found which branches of military had astronauts with more than 5 space walks.
+SELECT Name, Military_Branch, Space_Walks
+FROM astronauts
+GROUP BY Military_Branch
+HAVING Space_Walks > 5;
+
+#Similarly, I found which branches of military had astronauts with more than 2 space walks and more than 3 space flights.
+SELECT Name, Military_Branch, Space_Flights, Space_Walks
+FROM astronauts
+GROUP BY Military_Branch
+HAVING Space_Walks > 2 AND Space_Flights > 3;
+
+#Lastly, I determined how many female and male astronauts were active at the time the data was recorded.
 SELECT Gender, COUNT(Status) AS ActiveAstronauts 
 FROM astronauts where Status = "Active"
 GROUP BY Gender;
