@@ -1,0 +1,50 @@
+#For this project, I downloaded NASA Astronaut data from Kaggle.
+#Then I created a table to insert NASA Astronaut data into.
+#Finally, I performed analytics on the data using SQL.
+
+#Here is creating the table:
+CREATE TABLE astronauts(
+   Name                TEXT PRIMARY KEY,
+   Year                INTEGER NOT NULL,
+   GroupNum            INTEGER NOT NULL,
+   Status              TEXT NOT NULL,
+   Birth_Date          TEXT NOT NULL,
+   Birth_Place         TEXT NOT NULL,
+   Gender              TEXT NOT NULL,
+   Alma_Mater          TEXT,
+   Undergraduate_Major TEXT,
+   Graduate_Major      TEXT,
+   Military_Rank       TEXT,
+   Military_Branch     TEXT,
+   Space_Flights       INTEGER NOT NULL,
+   Space_Flight_hr     INTEGER NOT NULL,
+   Space_Walks         INTEGER NOT NULL,
+   Space_Walks_hr      REAL NOT NULL,
+   Missions            TEXT NOT NULL,
+   Death_Date          TEXT, 
+   Death_Mission       TEXT);
+   
+#Next I inserted NASA Astronaut data .csv into the table.
+   
+#Then I explored the data using the following SQL.
+
+#First, I determined the average space flight hours of female and male astronauts.
+SELECT Gender, avg(Space_Flight_hr)
+FROM astronauts
+GROUP BY gender;
+
+#Second, I determined which male and female astronauts had the highest number of space walks.
+SELECT Name, Gender, MAX(Space_Walks)
+FROM astronauts
+GROUP BY gender;
+
+#Next, I wanted to see the top 10 astronauts that had the highest number of space walks! 
+SELECT Name, Gender, Space_Walks
+FROM astronauts
+ORDER BY Space_Walks desc
+LIMIT 10;
+
+Lastly, I determined how many astronauts were active at the time the data was recorded, I grouped them by gender, as well.
+SELECT Gender, COUNT(Status) AS ActiveAstronauts 
+FROM astronauts where Status = "Active"
+GROUP BY Gender;
