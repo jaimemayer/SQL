@@ -1,0 +1,149 @@
+# In this project, I wanted to answer a number of questions relating to international sales for a digital media store. 
+
+# First, I looked into what countries had the most sales, outside the United States.
+SELECT BillingCountry, COUNT(InvoiceId) as TotalSales
+FROM chinook.invoices
+WHERE BillingCountry <> 'USA'
+GROUP BY BillingCountry
+ORDER BY TotalSales desc;
+
+# Then I showed all customers from the 3 countries with the highest sales.
+SELECT FirstName, LastName, CustomerId, Country 
+FROM chinook.customers
+WHERE Country in ('Canada', 'France', 'Brazil')
+ORDER BY Country;
+
+# I also listed all invoices from the 3 countries with the highest sales.
+SELECT customer.FirstName, customer.LastName, invoice.InvoiceId, invoice.InvoiceDate, invoice.BillingCountry
+FROM chinook.invoices invoice
+LEFT JOIN chinook.customers customer
+ON invoice.CustomerId = customer.CustomerId
+WHERE invoice.BillingCountry in ('Canada', 'France', 'Brazil')
+ORDER BY invoice.BillingCountry;
+
+# Of the three top selling foreign countries, which has had the most growth, or percent increase, in sales over time?
+
+# Show the total sales made by each sales agent.
+SELECT employees.FirstName, employees.LastName, employees.Title, SUM(items.UnitPrice*items.Quantity) as TotalSales
+FROM chinook.invoice_items items
+LEFT JOIN chinook.invoices invoice
+ON items.invoiceid = invoice.invoiceid
+JOIN chinook.customers customers
+ON invoice.customerid = customers.customerid
+JOIN chinook.employees employees
+ON customers.supportrepid = employees.employeeid
+WHERE employees.title = 'Sales Support Agent'
+GROUP BY employees.employeeid
+ORDER BY TotalSales desc;
+
+# Which sales agent made the most sales in our top 3 countries?
+SELECT employees.FirstName, employees.LastName, employees.Title, SUM(items.UnitPrice*items.Quantity) as TotalSales
+FROM chinook.invoice_items items
+LEFT JOIN chinook.invoices invoice
+ON items.invoiceid = invoice.invoiceid
+JOIN chinook.customers customers
+ON invoice.customerid = customers.customerid
+JOIN chinook.employees employees
+ON customers.supportrepid = employees.employeeid
+WHERE employees.title = 'Sales Support Agent'
+AND invoice.billingcountry in ('Canada', 'France', 'Brazil')
+GROUP BY employees.employeeid
+ORDER BY TotalSales desc
+LIMIT 1;
+
+# What is the companies total sales for 2013?
+SELECT 2013 as Year, SUM(items.UnitPrice*items.Quantity) as TotalSales
+FROM chinook.invoice_items items
+LEFT JOIN chinook.invoices invoice
+ON items.invoiceid = invoice.invoiceid
+WHERE invoice.invoicedate like '%2013%';
+
+# What is the companies total sales for 2013 in our top 3 countries?
+SELECT 2013 as Year, SUM(items.UnitPrice*items.Quantity) as TotalSales
+FROM chinook.invoice_items items
+LEFT JOIN chinook.invoices invoice
+ON items.invoiceid = invoice.invoiceid
+WHERE invoice.invoicedate like '%2013%'
+AND invoice.billingcountry in ('Canada', 'France', 'Brazil');
+
+# In Canada, France and Brazil, what are the 5 highest selling albums? What genre and media type are they? 
+SELECT albums.Title as AlbumTitle,
+genres.Name as Genre,
+types.Name as MediaType,
+COUNT(items.invoiceid) AS NumberSold
+
+FROM chinook.invoice_items items
+LEFT JOIN chinook.tracks tracks
+ON items.trackid = tracks.trackid
+JOIN chinook.albums albums
+ON tracks.albumid = albums.albumid
+JOIN chinook.genres genres
+ON tracks.genreid = genres.genreid
+JOIN chinook.media_types types
+ON tracks.mediatypeid = types.mediatypeid
+JOIN chinook.invoices invoices
+ON items.invoiceid = invoices.invoiceid
+
+WHERE invoices.billingcountry in ('Canada', 'France', 'Brazil')
+GROUP BY tracks.AlbumID
+ORDER BY NumberSold desc
+LIMIT 5;
+
+# In Canada, France and Brazil, what are the 5 highest selling artists? What genre and media type are they?
+SELECT artists.Name as Artist, 
+genres.Name as Genre,
+types.Name as MediaType,
+COUNT(items.invoiceid) AS NumberSold
+
+FROM chinook.invoice_items items
+LEFT JOIN chinook.tracks tracks
+ON items.trackid = tracks.trackid
+JOIN chinook.albums albums
+ON tracks.albumid = albums.albumid
+JOIN chinook.artists artists
+ON albums.artistid = artists.artistid
+JOIN chinook.genres genres
+ON tracks.genreid = genres.genreid
+JOIN chinook.media_types types
+ON tracks.mediatypeid = types.mediatypeid
+JOIN chinook.invoices invoices
+ON items.invoiceid = invoices.invoiceid
+
+WHERE invoices.billingcountry in ('Canada', 'France', 'Brazil')
+GROUP BY artists.artistid
+ORDER BY NumberSold desc
+LIMIT 5;
+
+# In Canada, France and Brazil, what are the top 3 highest selling genres?
+SELECT genres.Name as Genre, 
+COUNT(items.invoiceid) AS NumberSold
+
+FROM chinook.invoice_items items
+LEFT JOIN chinook.tracks tracks
+ON items.trackid = tracks.trackid
+JOIN chinook.genres genres
+ON tracks.genreid = genres.genreid
+JOIN chinook.invoices invoices
+ON items.invoiceid = invoices.invoiceid
+
+WHERE invoices.billingcountry in ('Canada', 'France', 'Brazil')
+GROUP BY genres.genreid
+ORDER BY NumberSold desc
+LIMIT 3;
+
+# In Canada, France and Brazil, what are the top 3 highest selling media types?
+SELECT types.Name as MediaType,
+COUNT(items.invoiceid) AS NumberSold
+
+FROM chinook.invoice_items items
+LEFT JOIN chinook.tracks tracks
+ON items.trackid = tracks.trackid
+JOIN chinook.media_types types
+ON tracks.mediatypeid = types.mediatypeid
+JOIN chinook.invoices invoices
+ON items.invoiceid = invoices.invoiceid
+
+WHERE invoices.billingcountry in ('Canada', 'France', 'Brazil')
+GROUP BY types.mediatypeid
+ORDER BY NumberSold desc
+LIMIT 3;
