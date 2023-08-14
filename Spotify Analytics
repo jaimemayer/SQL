@@ -43,6 +43,12 @@ FROM BIT_DB.spotifydata
 ORDER BY popularity desc
 LIMIT 10;
 
+# I then found which songs featured other artists and ordered them by highest popularity.
+SELECT artist_name, track_name, popularity
+FROM BIT_DB.Spotifydata
+WHERE track_name like '%feat.%'
+ORDER BY popularity desc;
+
 # Here I used a CTE to calculate the average popularity for the artists. Then for every artist with an average of 90 or higher, I showed their name, popularity and labeled them as a Top Star.
 WITH popularity_avg AS (
 SELECT
