@@ -22,6 +22,25 @@ WHERE invoice.BillingCountry in ('Canada', 'France', 'Brazil')
 ORDER BY invoice.BillingCountry;
 
 # Of the three top selling foreign countries, which has had the most growth, or percent increase, in sales over time?
+WITH CTE2009 AS (
+    SELECT BillingCountry, COUNT(InvoiceId) as 'T2009'
+    FROM invoices 
+    WHERE BillingCountry in ('Canada', 'France', 'Brazil')
+    AND InvoiceDate like '%2009%'
+    GROUP BY BillingCountry),
+    
+    CTE2013 AS (
+    SELECT BillingCountry, COUNT(InvoiceId) as 'T2013'
+    FROM invoices 
+    WHERE BillingCountry in ('Canada', 'France', 'Brazil')
+    AND InvoiceDate like '%2013%'
+    GROUP BY BillingCountry)
+    
+SELECT BillingCountry, 100*(CTE2013.T2013 - CTE2009.T2009) / CTE2009.T2009 as PercentIncrease
+FROM CTE2009
+JOIN CTE2013
+ON CTE2009.BillingCountry = CTE2013.BillingCountry
+ORDER BY PercentIncrease desc;    
 
 # Show the total sales made by each sales agent.
 SELECT employees.FirstName, employees.LastName, employees.Title, SUM(items.UnitPrice*items.Quantity) as TotalSales
