@@ -1,0 +1,197 @@
+-- For this project, I downloaded Amazon Consumer Survey data from Kaggle. 
+-- Then I created a table to insert the data into.
+
+CREATE TABLE consumer_behavior (
+	survey_id INTEGER PRIMARY KEY
+	, age INTEGER
+	, gender VARCHAR
+	, purchase_frequency VARCHAR
+	, purchase_category_1 VARCHAR NULL
+	, purchase_category_2 VARCHAR NULL
+	, purchase_category_3 VARCHAR NULL
+	, purchase_category_4 VARCHAR NULL
+	, purchase_category_5 VARCHAR NULL
+	, personalized_recommendation_purchase_frequency VARCHAR
+	, browsing_frequency VARCHAR
+	, product_search_method VARCHAR
+	, search_result_exploration VARCHAR
+	, customer_reviews_importance INTEGER
+	, add_to_cart_browsing VARCHAR
+	, cart_completion_frequency VARCHAR
+	, cart_abandonment_factors VARCHAR
+	, saveforlater_frequency VARCHAR
+	, review_left VARCHAR
+	, review_reliability VARCHAR
+	, review_helpfulness VARCHAR
+	, personalized_recommendation_frequency INTEGER
+	, recommendation_helpfulness VARCHAR
+	, rating_accuracy INTEGER
+	, shopping_satisfaction INTEGER
+	, service_appreciation VARCHAR
+	, improvement_areas VARCHAR
+	);
+ 
+-- Then, I inserted the data .csv into the table
+-- Finally, I explored the data and answered the following questions using SQL.
+
+
+-- What are the most popular product categories?
+
+SELECT 
+COUNT(Purchase_Categories) as Totals
+, CASE
+WHEN Purchase_Categories like '%Beauty and Personal Care%' THEN 'Beauty and Personal Care'
+WHEN Purchase_Categories like '%Clothing and Fashion%' THEN 'Clothing and Fashion'
+WHEN Purchase_Categories like '%Groceries and Gourmet Food%' THEN 'Groceries and Gourmet Food'
+WHEN Purchase_Categories like '%Home and Kitchen%' THEN 'Home and Kitchen'
+ELSE 'Others'
+END AS purchase_category_split
+FROM categories_reduced
+GROUP BY purchase_category_split
+ORDER BY totals desc;
+
+-- Give us a demographic analysis specifically for age and gender.
+
+SELECT
+CASE 
+WHEN age between 0 and 19 THEN '<20 years old'
+WHEN age between 20 and 29 THEN '20-29 years old'
+WHEN age between 30 and 39 THEN '30-39 years old'
+WHEN age between 40 and 49 THEN '40-49 years old'
+WHEN age between 50 and 59 THEN '50-59 years old'
+ELSE '60+ years old'
+END AS Demographic_Ages,
+COUNT(age) as Total
+FROM consumer_behavior
+GROUP BY Demographic_Ages
+ORDER BY Total desc;
+
+SELECT 
+Gender
+, COUNT(gender) as Total
+FROM consumer_behavior
+GROUP BY gender
+ORDER BY Total desc;
+
+-- What issues lead to cart abandonment?
+
+SELECT 
+cart_abandonment_factors
+, COUNT(cart_abandonment_factors) as Total
+FROM consumer_behavior
+GROUP BY cart_abandonment_factors
+ORDER BY total desc;
+
+-- How much do customers rely on item reviews?
+
+SELECT 
+review_reliability
+, COUNT(review_reliability) as Total
+FROM consumer_behavior
+GROUP BY review_reliability
+ORDER BY total desc;
+
+-- Do personalized recommendations affect purchase frequency?
+
+SELECT 
+personalized_recommendation_frequency
+, CASE
+WHEN personalized_recommendation_frequency = 1 THEN 'Never'
+WHEN personalized_recommendation_frequency = 2 THEN 'Rarely'
+WHEN personalized_recommendation_frequency = 3 THEN 'Occasionaly'
+WHEN personalized_recommendation_frequency = 4 THEN 'Moderately'
+ELSE 'Heavily'
+END AS Recommendation_Frequency
+, purchase_frequency
+, COUNT(purchase_frequency) as Total
+FROM consumer_behavior
+GROUP BY personalized_recommendation_frequency, purchase_frequency
+ORDER BY personalized_recommendation_frequency desc, Total desc;
+
+
+-- How can amazon improve?
+
+SELECT 
+improvement_areas
+, COUNT(improvement_areas) as Total
+FROM consumer_behavior
+GROUP BY improvement_areas
+HAVING total > 1
+ORDER BY total desc
+LIMIT 3;
+
+
+-- Below, I created four different tables in order to better visualize data in Tableau when connecting to the data source:
+
+-- table to isolate survey_id’s and purchase categories
+
+CREATE TABLE categories AS
+SELECT 
+	survey_id
+	, purchase_category_1
+	, purchase_category_2
+	, purchase_category_3
+	, purchase_category_4
+	, purchase_category_5
+FROM consumer_behavior;
+
+-- table to combine all purchase categories into one column with survey_id’s and remove blanks
+
+CREATE TABLE categories_reduced AS
+SELECT 
+survey_id
+, purchase_category_1 as Purchase_Categories
+FROM categories
+UNION 
+SELECT 
+survey_id
+, purchase_category_2 as Purchase_Categories
+FROM categories
+UNION
+SELECT 
+survey_id
+, purchase_category_3 as Purchase_Categories
+FROM categories
+UNION
+SELECT 
+survey_id
+, purchase_category_4 as Purchase_Categories
+FROM categories
+UNION
+SELECT 
+survey_id
+, purchase_category_5 as ‘Purchase_Categories’
+FROM categories;
+
+DELETE FROM categories_reduced
+WHERE length(Purchase_Categories) = 0;
+
+-- table to group age into demographic groups
+
+CREATE TABLE age_demographic AS
+SELECT 
+survey_id
+, CASE 
+WHEN age between 0 and 19 THEN '<20 years old'
+WHEN age between 20 and 29 THEN '20-29 years old'
+WHEN age between 30 and 39 THEN '30-39 years old'
+WHEN age between 40 and 49 THEN '40-49 years old'
+WHEN age between 50 and 59 THEN '50-59 years old'
+ELSE '60+ years old'
+END AS Demographic_Ages
+FROM consumer_behavior;
+
+-- table to label personalized recommendation frequency qualitatively
+
+CREATE TABLE personalized_recommendation_frequency AS
+SELECT 
+survey_id
+, CASE
+WHEN personalized_recommendation_frequency = 1 THEN 'Never'
+WHEN personalized_recommendation_frequency = 2 THEN 'Rarely'
+WHEN personalized_recommendation_frequency = 3 THEN 'Occasionaly'
+WHEN personalized_recommendation_frequency = 4 THEN 'Moderately'
+ELSE 'Heavily'
+END AS Recommendation_Frequency
+FROM consumer_behavior;
+
